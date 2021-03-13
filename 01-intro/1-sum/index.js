@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 /**
  * sum
  * @param {number} m base
@@ -7,3 +8,4 @@
 export default function sum(m, n) {
     return m + n;
 }
+
