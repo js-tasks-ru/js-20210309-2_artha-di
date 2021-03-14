@@ -5,18 +5,15 @@
  * @returns {object} - returns the new object
  */
 export const pick = (obj, ...fields) => {
-  const functionArguments = fields;
-  const objEntries = Object.entries(obj);
+  const arrayEntries = Object.entries(obj);
   const newObj = [];
 
-  for (let i = 0; i < functionArguments.length; i++) {
-
-    for (let j = 0; j < objEntries.length; j++) {
-
-      if (objEntries[j][0] === functionArguments[i]) {
-        newObj.push(objEntries[j]);
+  fields.map((item) => {
+    arrayEntries.map((element) => {
+      if (element[0] === item) {
+        newObj.push(element);
       }
-    }
-  }
+    });
+  })
   return Object.fromEntries(newObj);
 };
