@@ -5,18 +5,14 @@
  * @returns {object} - returns the new object
  */
 export const omit = (obj, ...fields) => {
-  const functionArguments = fields;
-  const objEntries = Object.entries(obj);
+  const arrayEntries = Object.entries(obj);
 
-  for (let i = 0; i < functionArguments.length; i++) {
-
-    for (let j = 0; j < objEntries.length; j++) {
-
-      if (objEntries[j][0] === functionArguments[i]) {
-
-        objEntries.splice(j, 1);
+  fields.map((item) => {
+    arrayEntries.map(function (element, index, array) {
+      if (element[0] === item) {
+        array.splice(index, 1);
       }
-    }
-  }
-  return Object.fromEntries(objEntries);
+    });
+  });
+  return Object.fromEntries(arrayEntries);
 };
