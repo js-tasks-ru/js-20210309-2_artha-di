@@ -6,17 +6,10 @@
  */
 export function sortStrings(arr, param = 'asc') {
 
-  if (arr.length !== 0) {
+  const arrayArg = arr.slice();
+  let direction = (param === 'asc') ? 1 : -1;
 
-    const arrayArg = arr.slice().sort();
-
-    const newArraySort = arrayArg.sort(function (a, b) {
-      return a.localeCompare(b, ['ru', 'en'], { sensitivity: 'base' });
-    });
-
-    if (param !== 'asc') {
-      newArraySort.reverse();
-    }
-    return newArraySort;
-  }
+  return arrayArg.sort(function (a, b) {
+    return a.localeCompare(b, ['ru', 'en'], { caseFirst: 'upper'}) * direction;
+  });
 }
