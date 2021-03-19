@@ -6,6 +6,6 @@
 
 export function uniq(arr = '') {
   const copyArray = [...arr];
-  if (!arr || !copyArray.join('')) {return [];}
+  if (!copyArray.join('')) {return [];}
   return [...new Set(copyArray)];
 }
