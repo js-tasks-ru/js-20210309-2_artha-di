@@ -14,16 +14,18 @@ export function trimSymbols(string = '', size) {
     case '':
       return string;
   }
-  let countChar = 1;
-  return [...string].reduce((accumulator, currentValue, i, arr) => {
-    if (countChar < size && arr[i - 1] === currentValue) {
-      countChar++;
-      return accumulator += currentValue;
+  const arrString = [...string];
+
+  for (const [i, char] of [...string].entries()) {
+    const pattern  = char.repeat(size);
+    const position = string.indexOf(pattern , i);
+
+    if (position !== i) {
+      continue;
     }
-    if (arr[i - 1] !== currentValue) {
-      countChar = 1;
-      return accumulator += currentValue;
+    if (position === i && string[i - 1] === char){
+      arrString[i] = '';
     }
-    return accumulator;
-  });
+  }
+  return arrString.join('');
 }
