@@ -50,18 +50,18 @@ export default class ColumnChart {
     if (Array.isArray(this.data) && this.data.length !==  0) {
       const maxValue = Math.max(...this.data);
       const scale = this.chartHeight / maxValue;
-      return new Map(this.data.map(item => {
+      return new Map([...this.data.map(item => {
         return [(item / maxValue * 100).toFixed(0) + '%', String(Math.floor(item * scale))];
-      }));
+      })]);
     }
   }
 
   createChart() {
-    const arrayPercent = this.getColumnProps(this.data);
-    if (arrayPercent && this.data.length) {
-      for (const [percent, num] of arrayPercent) {
+    const arrayData = this.getColumnProps();
+    if (arrayData && this.data.length) {
+      for (const [key, value] of arrayData) {
         const elem = this.element.querySelector('.column-chart__chart');
-        elem.insertAdjacentHTML('beforeend', `<div style="--value: ${num}" data-tooltip="${percent}"></div>`)
+        elem.insertAdjacentHTML('beforeend', `<div style="--value: ${value}" data-tooltip="${key}"></div>`)
       }
     }
   }
