@@ -21,6 +21,7 @@ export default class ColumnChart {
       <div class="column-chart__container">
         <div data-element="header" class="column-chart__header">${this.value}</div>
         <div data-element="body" class="column-chart__chart">
+        ${this.createChart()}
         </div>
       </div>
     </div>
@@ -59,17 +60,14 @@ export default class ColumnChart {
   createChart() {
     const arrayData = this.getColumnProps();
     if (arrayData && this.data.length) {
-      for (const [key, value] of arrayData) {
-        const elem = this.element.querySelector('.column-chart__chart');
-        elem.insertAdjacentHTML('beforeend', `<div style="--value: ${value}" data-tooltip="${key}"></div>`)
-      }
+      return [...arrayData].map(([key, value]) => `<div style="--value: ${value}" data-tooltip="${key}"></div>`).join('');
     }
   }
   // initEventListeners () {
   //   // NOTE: в данном методе добавляем обработчики событий, если они есть
   // }
   update(array) {
-    this.data = Array.isArray(array) ? array : '';
+    this.data = Array.isArray(array) ? array : [];
     this.remove();
     this.render();
   }
