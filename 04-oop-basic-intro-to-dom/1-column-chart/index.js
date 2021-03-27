@@ -1,75 +1,81 @@
 export default class ColumnChart {
   chartHeight = 50;
+  subElements = {};
+  element;
+
   constructor({
-                data = [],
-                label = '',
-                link = '',
-                value = 0
-              } = {}) {
+    data = [],
+    label = '',
+    link = '',
+    value = 0
+    } = {}) {
     this.data = data;
     this.label = label;
     this.link = link;
     this.value = value;
     this.render();
   }
-
-  render() {
-    const element = document.createElement('div'); // (*)
-    element.innerHTML = `
-    <div class="column-chart column-chart_loading" style="--chart-height: ${this.chartHeight}">
+  get template() {
+    return `<div class="column-chart column-chart_loading" style="--chart-height: ${this.chartHeight}">
       <div class="column-chart__title">${this.label}${this.checkLink()}</div>
       <div class="column-chart__container">
         <div data-element="header" class="column-chart__header">${this.value}</div>
         <div data-element="body" class="column-chart__chart">
-        ${this.createChart()}
+        ${this.createChart(this.data)}
         </div>
       </div>
     </div>
     `;
-    // NOTE: в этой строке мы избавляемся от обертки-пустышки в виде `div`
-    // который мы создали на строке (*)
+  }
+
+  render() {
+    const element = document.createElement('div'); // (*)
+    element.innerHTML = this.template;
     this.element = element.firstElementChild;
-    this.createChart();
+
     if(this.data.length) {
       this.element.classList.remove('column-chart_loading');
     }
+    this.subElements = this.getSubElements(this.element);
+  }
+
+  getSubElements(element) {
+    const elements = element.querySelectorAll('[data-element]');
+    return [...elements].reduce((accum, subElement) => {
+      accum[subElement.dataset.element] = subElement;
+      return accum;
+    }, {});
   }
 
   checkLink() {
-    if (this.link) {
-      return this.appendLink();
-    } else {
-      return '';
-    }
+    return this.link ? this.appendLink() : '';
   }
 
   appendLink() {
     return `<a class="column-chart__link" href="${this.link}">View all</a>`;
   }
 
-  getColumnProps() {
-    if (Array.isArray(this.data) && this.data.length !==  0) {
-      const maxValue = Math.max(...this.data);
+  getColumnProps(data) {
+    if (Array.isArray(data) && data.length) {
+      const maxValue = Math.max(...data);
       const scale = this.chartHeight / maxValue;
-      return new Map([...this.data.map(item => {
+      return new Map([...data.map(item => {
         return [(item / maxValue * 100).toFixed(0) + '%', String(Math.floor(item * scale))];
       })]);
     }
   }
 
-  createChart() {
-    const arrayData = this.getColumnProps();
-    if (arrayData && this.data.length) {
-      return [...arrayData].map(([key, value]) => `<div style="--value: ${value}" data-tooltip="${key}"></div>`).join('');
+  createChart(data) {
+    const arrayData = this.getColumnProps(data);
+    if (arrayData && data.length) {
+      return [...arrayData].map(([key, value]) =>
+        `<div style="--value: ${value}" data-tooltip="${key}"></div>`).join('');
     }
   }
-  // initEventListeners () {
-  //   // NOTE: в данном методе добавляем обработчики событий, если они есть
-  // }
-  update(array) {
-    this.data = Array.isArray(array) ? array : [];
-    this.remove();
-    this.render();
+
+  update({headerData = '', bodyData = []}) {
+    headerData !== '' ? this.subElements.header.textContent = headerData : '';
+    bodyData.length ? this.subElements.body.innerHTML = this.createChart(bodyData) : [];
   }
 
   remove () {
