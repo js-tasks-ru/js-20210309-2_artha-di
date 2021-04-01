@@ -3,7 +3,7 @@ export default class NotificationMessage {
   static prevMessage;
   static timer;
 
-  constructor (text = '', { duration = '2', type = 'success'} = {}) {
+  constructor (text = '', { duration = 1000, type = 'success'} = {}) {
     this.text = text;
     this.duration = duration;
     this.type = type;
@@ -43,22 +43,26 @@ export default class NotificationMessage {
     }
   }
 
-  timeForShow(command = '') {
-    let timer = setTimeout(() => {
+  delayExecute(command = '') {
+    const timer = setTimeout(() => {
       this.remove();
       this.destroy();
       clearTimeout(timer);
-    }, this.duration - 10);
+    }, this.duration);
     NotificationMessage.timer = timer;
   }
 
-  show(target = '') {
+  show(target = 'body') {
     if (NotificationMessage.prevMessage) {
       clearTimeout(NotificationMessage.timer);
       this.remove();
     }
-    !target ? document.body.append(this.element) : target.append(this.element);
+    if (target === 'body') {
+      document.body.append(this.element)
+    } else {
+      target.append(this.element)
+    }
     NotificationMessage.prevMessage = this.element;
-    this.timeForShow();
+    this.delayExecute();
   }
 }
