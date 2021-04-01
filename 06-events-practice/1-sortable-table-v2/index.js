@@ -1,13 +1,25 @@
 export default class SortableTable {
 
+  getParametersForSortButton = (event) => {
+    const button = event.currentTarget;
+    const section = button.dataset.id;
+    const orderButton = button.dataset.order;
+    this.headerButtons.map(item => item.dataset.order = '')
+    const newOrderButton = orderButton === 'asc' ? 'desc' : orderButton === 'desc' ? 'asc' : 'desc';
+    button.dataset.order = newOrderButton;
+    this.sort(section, newOrderButton)
+  }
+
   dataHeader = {};
   subElements;
   element;
+  headerButtons;
 
   constructor(header = [], { data } = []) {
     this.header = header;
     this.data = data;
     this.render();
+    this.setEventHeaderButtons ();
   }
 
   getDataHeader() {
@@ -32,8 +44,8 @@ export default class SortableTable {
   }
 
   buildRowHeader([id, title, sortable]) {
-      return `
-      <div class="sortable-table__cell" data-id="${id}" data-sortable="${sortable}" data-order="">
+    return `
+      <div class="sortable-table__cell" data-id="${id}" data-sortable="${sortable}" ${sortable === true ? 'data-order="asc"' : ''}>
         <span>${title}</span>${sortable === true ? this.templateHeaderArrow : ''}
       </div>`;
   }
@@ -57,7 +69,7 @@ export default class SortableTable {
     }).join('');
   }
 
-  getRowTable(obj = this.data) {
+  getRowTable(obj = this.resultSort ('title', 'asc', this.data)) {
     return obj.map( (data) => {
       return `
         <a href="/products/3d-ochki-epson-elpgs03" class="sortable-table__row">
@@ -92,7 +104,8 @@ export default class SortableTable {
     this.subElements = this.getSubElements(element);
   }
 
-  sortValueString(arraySort, fieldValue, orderValue) {
+  sortValueString(fieldValue = 'title', orderValue = 'asc', arraySort = this.data) {
+
     let arrayForSort = arraySort.map( (item) => item[fieldValue]);
 
     let direction = 0;
@@ -108,7 +121,7 @@ export default class SortableTable {
     });
   }
 
-  sortValueNumber(arraySort, fieldValue, orderValue) {
+  sortValueNumber(fieldValue, orderValue, arraySort = this.data) {
     let arrayForSort = arraySort.map( (item) => item[fieldValue]);
 
     return  arrayForSort.sort((a, b) => {
@@ -121,21 +134,31 @@ export default class SortableTable {
     });
   }
 
-  sort(fieldValue, orderValue) {
+  sort(fieldValue, orderValue, arrySort = this.data) {
+
+    const resultSort = this.resultSort (fieldValue, orderValue, arrySort = this.data);
+
+    this.subElements.body.innerHTML = this.getRowTable(resultSort);
+  }
+
+  resultSort (fieldValue, orderValue, arrySort = this.data) {
     let sortArray;
 
     if(typeof this.data[0][fieldValue] === 'string') {
-      sortArray = this.sortValueString(this.data, fieldValue, orderValue);
-    } else {
-      sortArray = this.sortValueNumber(this.data, fieldValue, orderValue);
-    }
 
+      sortArray = this.sortValueString(fieldValue, orderValue, arrySort,);
+    } else {
+
+      sortArray = this.sortValueNumber(fieldValue, orderValue, arrySort);
+    }
     const resultSort = [];
 
     for(const value of sortArray) {
-      resultSort.push(this.data.find((item) => item[fieldValue] === value));
+
+      resultSort.push(arrySort.find((item) => item[fieldValue] === value));
     }
-    this.subElements.body.innerHTML = this.getRowTable(resultSort);
+
+    return resultSort;
   }
 
   getSubElements(element) {
@@ -146,9 +169,17 @@ export default class SortableTable {
     }, {});
   }
 
+  setEventHeaderButtons () {
+    const buttons = [...this.subElements.header.querySelectorAll('[data-order]')]
+                    .filter((item) => item.dataset.sortable === 'true');
+    this.headerButtons = buttons;
+    for (const button of buttons) {
+      button.addEventListener('pointerdown', this.getParametersForSortButton);
+    }
+  }
+
   destroy(){
     this.element.remove();
     this.subElements = {};
   }
 }
-
