@@ -108,16 +108,12 @@ export default class SortableTable {
 
     let arrayForSort = arraySort.map( (item) => item[fieldValue]);
 
-    let direction = 0;
-    switch (orderValue) {
-      case 'asc':
-        direction = 1
-        break;
-      case 'desc':
-        direction = -1
-    }
+    const directions = {
+      asc: 1,
+      desc: -1
+    };
     return  arrayForSort.sort((a, b) => {
-      return a.localeCompare(b, ['ru', 'en'], { caseFirst: 'upper'}) * direction;
+      return a.localeCompare(b, ['ru', 'en'], { caseFirst: 'upper'}) * directions[orderValue];
     });
   }
 
