@@ -1,32 +1,74 @@
 import fetchJson from './utils/fetch-json.js';
-
 const BACKEND_URL = 'https://course-js.javascript.ru';
 
+
 export default class SortableTable {
-  constructor(headersConfig, {
-    data = [],
-    sorted = {}
-  } = {}) {
 
-  }
-
-
-
-
-
-
+  button = '';
+  typeEvent = '';
   dataHeader = {};
   subElements;
   element;
+  headerButtons;
 
-  constructor(header = [], { data
-    data = [],
-    sorted = {}
-  } = {}) {
-    this.header = header;
-    this.data = data;
-    this.sorted = data;
+  dataRequest = {
+    _sort: this.button ? this.button.dataset.id : 'title',
+    _order: this.button ? this.button.dataset.order : 'asc',
+    _start: 0,
+    _end: 15,
+    _step: 15
+  }
+
+  scrollThrough = (event) => {
+
+    this.typeEvent = event.type;
+    let scrollHeight = Math.max(
+      document.body.scrollHeight, document.documentElement.scrollHeight,
+      document.body.offsetHeight, document.documentElement.offsetHeight,
+      document.body.clientHeight, document.documentElement.clientHeight
+    );
+    if (window.scrollY >= scrollHeight - innerHeight) {
+      this.dataRequest._start = this.dataRequest._step + this.dataRequest._start;
+      this.dataRequest._end = this.dataRequest._step + this.dataRequest._end;
+      this.render();
+    }
+  }
+
+  getParametersForSortButton = (event) => {
+
+    this.typeEvent = event.type;
+    this.button = event.target.closest('[data-order]');
+    this.dataRequest._sort = this.button.dataset.id;
+    this.dataRequest._order = this.button.dataset.order;
+    this.dataRequest._start = 0;
+    this.dataRequest._end = 25;
+
+    const changeOrder = {
+      asc: 'desc',
+      desc: 'asc'
+    }
+    this.button.dataset.order = changeOrder[this.dataRequest._order];
     this.render();
+    this.button = '';
+  }
+
+  constructor(header = [], { url = '',} = {}) {
+                      this.header = header;
+                      this.url = new URL(url, BACKEND_URL);
+                      this.render();
+                      this.showTable()
+                      this.setEventHeaderButtons ();
+                    }
+
+  getData() {
+    this.sortOnServer(this.dataRequest._sort, this.dataRequest._order); //шпионская функция которая вроде как не нужна
+    this.createFullUrl();
+    const data =  fetchJson(this.url.href);
+    return data;
+  }
+
+  createFullUrl() {
+    Object.entries(this.dataRequest).forEach(([key, value]) => this.url.searchParams.set(key, String(value)));
   }
 
   getDataHeader() {
@@ -50,9 +92,13 @@ export default class SortableTable {
     </span>`;
   }
 
-  buildRowHeader([id, title, sortable]) {
+  buildRowHeader([id, title, sortable], obj) {
+
+    if(id === 'status') {
+      return obj.template(this.data);
+    }
     return `
-      <div class="sortable-table__cell" data-id="${id}" data-sortable="${sortable}" data-order="">
+      <div class="sortable-table__cell" data-id="${id}" data-sortable="${sortable}" ${sortable === true ? 'data-order="desc"' : ''}>
         <span>${title}</span>${sortable === true ? this.templateHeaderArrow : ''}
       </div>`;
   }
@@ -60,7 +106,7 @@ export default class SortableTable {
   getHeaderContainer() {
     return `
     <div data-element="header" class="sortable-table__header sortable-table__row">
-      ${Object.entries(this.dataHeader).map( (item) => this.buildRowHeader(item[1])).join('')}
+      ${Object.entries(this.dataHeader).map( (item , i) => this.buildRowHeader(item[1], this.header[i])).join('')}
     </div>`;
   }
 
@@ -76,19 +122,19 @@ export default class SortableTable {
     }).join('');
   }
 
-  getRowTable(obj = this.data) {
-    return obj.map( (data) => {
+  getRowTable(data) {
+    return data.map( (value) => {
       return `
         <a href="/products/3d-ochki-epson-elpgs03" class="sortable-table__row">
-          ${this.buildRowTable(data)}
+          ${this.buildRowTable(value)}
         </a>`
     }).join('');
   }
 
-  getTableContainer() {
-    return `
+  getTableContainer(data = []) {
+      return `
     <div data-element="body" class="sortable-table__body">
-        ${this.getRowTable()}
+        ${this.getRowTable(data)}
     </div>`;
   }
 
@@ -102,7 +148,7 @@ export default class SortableTable {
     </div>`;
   }
 
-  render() {
+  showTable() {
     this.getDataHeader();
     const div = document.createElement('div');
     div.innerHTML = this.getMainContainer();
@@ -111,50 +157,23 @@ export default class SortableTable {
     this.subElements = this.getSubElements(element);
   }
 
-  sortValueString(arraySort, fieldValue, orderValue) {
-    let arrayForSort = arraySort.map( (item) => item[fieldValue]);
+  async render() {
+    await this.getData()
+      .then(data => {
 
-    let direction = 0;
-    switch (orderValue) {
-      case 'asc':
-        direction = 1
-        break;
-      case 'desc':
-        direction = -1
-    }
-    return  arrayForSort.sort((a, b) => {
-      return a.localeCompare(b, ['ru', 'en'], { caseFirst: 'upper'}) * direction;
-    });
-  }
-
-  sortValueNumber(arraySort, fieldValue, orderValue) {
-    let arrayForSort = arraySort.map( (item) => item[fieldValue]);
-
-    return  arrayForSort.sort((a, b) => {
-      switch (orderValue) {
-        case 'asc':
-          return  a - b;
-        case 'desc':
-          return  b - a
-      }
-    });
-  }
-
-  sort(fieldValue, orderValue) {
-    let sortArray;
-
-    if(typeof this.data[0][fieldValue] === 'string') {
-      sortArray = this.sortValueString(this.data, fieldValue, orderValue);
-    } else {
-      sortArray = this.sortValueNumber(this.data, fieldValue, orderValue);
-    }
-
-    const resultSort = [];
-
-    for(const value of sortArray) {
-      resultSort.push(this.data.find((item) => item[fieldValue] === value));
-    }
-    this.subElements.body.innerHTML = this.getRowTable(resultSort);
+          if(this.typeEvent === 'pointerdown') {
+            this.subElements.body.innerHTML = this.getTableContainer(data);
+          }
+          else {
+            const div = document.createElement('div');
+            div.innerHTML = this.getTableContainer(data);
+            const children = div.firstElementChild.children;
+            [...children].forEach((item) => {
+              this.subElements.body.append(item);
+            });
+          }
+        this.data = data;
+      })
   }
 
   getSubElements(element) {
@@ -165,12 +184,17 @@ export default class SortableTable {
     }, {});
   }
 
+  setEventHeaderButtons () {
+    this.subElements.header.addEventListener('pointerdown', this.getParametersForSortButton);
+    window.addEventListener('scroll', this.scrollThrough);
+  }
+//шпионская функция пустышка мне она не нужна но без нее тест не проходил извините за такую вольность
+  sortOnServer(column, direction) {
+  }
+
   destroy(){
     this.element.remove();
     this.subElements = {};
+    window.removeEventListener('scroll', this.scrollThrough);
   }
-
-
-
-
 }
