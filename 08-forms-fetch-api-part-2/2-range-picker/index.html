@@ -29,7 +29,5 @@
 
   holder.append(rangePicker.element);
 
-  rangePicker.element.addEventListener('date-select', event => {
-    console.error(event);
-  });
+  rangePicker.element.addEventListener('date-select', rangePicker.onPlace);
 </script>
