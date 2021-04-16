@@ -1,9 +1,9 @@
 export default class RangePicker {
 
-  oneDayMs = 86400000;
+  oneDayMs = 24 * 60 * 60 * 1000;
   mapArray = [];
   currentMonth = {};
-  flag = Boolean;
+  flag = '';
   month = this.getArrayMonth();
   renderDate = {
     from: '',
@@ -11,7 +11,7 @@ export default class RangePicker {
   }
 
   getArrayMonth() {
-    return Array(12).fill(1).map((item, i) =>
+    return new Array(12).fill(1).map((item, i) =>
     new Date(`2000.${i + 1}.1`).toLocaleString('ru-RU', {month: 'long'}));
   }
 
