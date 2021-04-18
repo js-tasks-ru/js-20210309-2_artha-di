@@ -157,22 +157,21 @@ export default class SortableTable {
   }
 
   async render() {
-    await this.getData()
-      .then(data => {
+   const data = await this.getData();
 
-          if(this.typeEvent === 'pointerdown') {
-            this.subElements.body.innerHTML = this.getTableContainer(data);
-          }
-          else {
-            const div = document.createElement('div');
-            div.innerHTML = this.getTableContainer(data);
-            const children = div.firstElementChild.children;
-            [...children].forEach((item) => {
-              this.subElements.body.append(item);
-            });
-          }
-        this.data = data;
-      })
+   if(this.typeEvent === 'pointerdown') {
+     this.subElements.body.innerHTML = this.getTableContainer(data);
+   }
+   else {
+     const div = document.createElement('div');
+     div.innerHTML = this.getTableContainer(data);
+     const children = div.firstElementChild.children;
+     [...children].forEach((item) => {
+       this.subElements.body.append(item);
+     });
+   }
+
+   this.data = data;
   }
 
   getSubElements(element) {
