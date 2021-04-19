@@ -34,7 +34,7 @@ export default class SortableTable {
     }
   }
 
-  getParametersForSortButton = (event) => {
+  getParametersForSort = (event) => {
 
     this.typeEvent = event.type;
     this.button = event.target.closest('[data-order]');
@@ -63,8 +63,7 @@ export default class SortableTable {
   getData() {
     this.sortOnServer(this.dataRequest._sort, this.dataRequest._order); //шпионская функция которая вроде как не нужна
     this.createFullUrl();
-    const data =  fetchJson(this.url.href);
-    return data;
+    return  fetchJson(this.url.href);
   }
 
   createFullUrl() {
@@ -158,22 +157,21 @@ export default class SortableTable {
   }
 
   async render() {
-    await this.getData()
-      .then(data => {
+   const data = await this.getData();
 
-          if(this.typeEvent === 'pointerdown') {
-            this.subElements.body.innerHTML = this.getTableContainer(data);
-          }
-          else {
-            const div = document.createElement('div');
-            div.innerHTML = this.getTableContainer(data);
-            const children = div.firstElementChild.children;
-            [...children].forEach((item) => {
-              this.subElements.body.append(item);
-            });
-          }
-        this.data = data;
-      })
+   if(this.typeEvent === 'pointerdown') {
+     this.subElements.body.innerHTML = this.getTableContainer(data);
+   }
+   else {
+     const div = document.createElement('div');
+     div.innerHTML = this.getTableContainer(data);
+     const children = div.firstElementChild.children;
+     [...children].forEach((item) => {
+       this.subElements.body.append(item);
+     });
+   }
+
+   this.data = data;
   }
 
   getSubElements(element) {
@@ -185,7 +183,7 @@ export default class SortableTable {
   }
 
   setEventHeaderButtons () {
-    this.subElements.header.addEventListener('pointerdown', this.getParametersForSortButton);
+    this.subElements.header.addEventListener('pointerdown', this.getParametersForSort);
     window.addEventListener('scroll', this.scrollThrough);
   }
 //шпионская функция пустышка мне она не нужна но без нее тест не проходил извините за такую вольность

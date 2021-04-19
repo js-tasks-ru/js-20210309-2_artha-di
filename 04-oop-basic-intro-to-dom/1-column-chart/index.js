@@ -24,7 +24,7 @@ export default class ColumnChart {
         ${this.createChart(this.data)}
         </div>
       </div>
-    </div>
+    </div>z
     `;
   }
 

@@ -21,8 +21,9 @@ export default class ProductForm {
   };
 
   onSubmit = (event) => {
-    event.preventDefault();
+
     if (event.target.contains(this.subElements.productForm.save)) {
+      event.preventDefault();
       this.save();
     }
   }
@@ -176,12 +177,7 @@ export default class ProductForm {
     const {categories, products} = this.getUrl(this.productId);
     const promiseCategoriesData = fetchJson(categories);
 
-    let promiseProductData;
-    if(products) {
-      promiseProductData = fetchJson(products);
-    } else {
-      promiseProductData = this.defaultFormData;
-    }
+    const promiseProductData = products ? fetchJson(products) : this.defaultFormData;
 
     const [resultCategoriesData, resultProductsData] = await Promise.all([promiseCategoriesData, promiseProductData]);
     this.resultCategoriesData = resultCategoriesData;
